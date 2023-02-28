@@ -1,7 +1,7 @@
 library("sf")
 library("tidyverse")
 library("sfarrow")
-install.packages("sfarrow")
+# install.packages("sfarrow")
 
 st_layers("data-raw/swissboundaries3d_2023-01_2056_5728.shp/swissBOUNDARIES3D_1_4_TLM_HOHEITSGEBIET.shp")
 sisslerfeld <- read_sf("data-raw/swissboundaries3d_2023-01_2056_5728.shp/swissBOUNDARIES3D_1_4_TLM_HOHEITSGEBIET.shp",
@@ -18,14 +18,25 @@ read_sf("data-raw/SOLKAT_DACH.gpkg", query = "(SELECT * FROM SOLKAT_CH_DACH LIMI
 read_sf("data-raw/SOLKAT_DACH.gpkg", 
 query = "(SELECT ST_PolygonFromText('POLYGON((2637380 1263691, 2642887 1263691, 2642887 1267625, 2637380 1267625, 2637380 1263691))') as geom) solar")
 
-solardach_sisslerfeld <- read_sf("data-raw/SOLKAT_DACH.gpkg", query = "SELECT st_intersection(solar.geom, sisslerfeld.geom) as geom_intersect, * FROM (SELECT * FROM SOLKAT_CH_DACH) solar, (SELECT ST_PolygonFromText('POLYGON((2637380 1263691, 2642887 1263691, 2642887 1267625, 2637380 1267625, 2637380 1263691))') as geom) sisslerfeld WHERE ST_intersects(solar.geom, sisslerfeld.geom)")
+solardach <- read_sf("data-raw/SOLKAT_DACH.gpkg", query = "SELECT st_intersection(solar.geom, sisslerfeld.geom) as geom_intersect, * FROM (SELECT * FROM SOLKAT_CH_DACH) solar, (SELECT ST_PolygonFromText('POLYGON((2637380 1263691, 2642887 1263691, 2642887 1267625, 2637380 1267625, 2637380 1263691))') as geom) sisslerfeld WHERE ST_intersects(solar.geom, sisslerfeld.geom)")
 
-solardach_sisslerfeld <- solardach_sisslerfeld |>
+solardach <- solardach |>
     select(-geom)
 
+solardach <- solardach |>
+    st_transform(4326)
 
-write_sf(solardach_sisslerfeld, "data-processed/prepared_data.gpkg", "solardach")
-write_sf(sisslerfeld, "data-processed/prepared_data.gpkg", "sisslerfeld")
+sisslerfeld <- sisslerfeld |>
+    st_transform(4326)
+
+
+write_sf(solardach, "data-processed/prepared_data.gpkg", "solardach", delete_layer = TRUE)
+
+sfarrow::st_write_parquet(solardach,"data-processed/solardach.parquet")
+
+write_sf(sisslerfeld, "data-processed/prepared_data.gpkg", "sisslerfeld", delete_layer = TRUE)
+
+
 
 
 
