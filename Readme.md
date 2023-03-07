@@ -10,9 +10,3 @@
   - ShinyApp Minimalversion mit clickable rooftops in shinymobile
 
 
-  maybe report this as an issue:
-
-```r
-mapdeck(data = city_trail, zoom = 19)  |> add_polygon()
-mapdeck(data = city_trail, zoom = 19) 
-```
