@@ -1,25 +1,19 @@
-library(shiny)
+
+source("libraries.r")
+
 
 ui <- fluidPage(
 
-  titlePanel("Hello Shiny!"),
+  titlePanel("EnergyKiosk"),
 
   sidebarLayout(
-
     sidebarPanel(
-
-      sliderInput(inputId = "bins",
-                  label = "Number of bins:",
-                  min = 1,
-                  max = 50,
-                  value = 30)
-
+      tableOutput("tab"),
+      actionButton("rayshade", "Go!",)
     ),
 
     mainPanel(
-
-      leaflet::leafletOutput("map")
-
+       mapdeckOutput("map",height = "90vh")
     )
   )
 )
