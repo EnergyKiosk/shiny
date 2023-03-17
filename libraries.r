@@ -6,3 +6,5 @@ library("shiny")
 library("sfarrow")
 library("mapdeck")
 library("stringr")
+
+mapdeck::set_token("pk.eyJ1IjoicmF0YWEiLCJhIjoiY2xleTlraHVvMDJxZDN0bDMzbHZqZmdueSJ9.pWvThW5XMznC9rLYwGV8Aw")
