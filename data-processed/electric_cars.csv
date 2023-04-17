@@ -1,0 +1,18 @@
+model;range_km;capacity_kwh
+Tesla Model S Long Range;652;100
+Tesla Model X Long Range;597;100
+Tesla Model 3 Long Range;576;82
+Tesla Model Y Long Range;525;75
+Ford Mustang Mach-E;491;75.7
+Chevrolet Bolt EV;417;65
+Porsche Taycan 4S;365;79.2
+Audi e-tron;357;95
+Volkswagen ID.4;402;82
+Nissan Leaf Plus;364;62
+BMW i3;246;42.2
+Hyundai Kona Electric;416;64
+Kia Niro EV;385;64
+Rivian R1T;505;135
+Polestar 2;375;78
+Mercedes-Benz EQC;354;80
+Mini Cooper SE;183;32.6

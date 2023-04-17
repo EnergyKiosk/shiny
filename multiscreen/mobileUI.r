@@ -1,12 +1,12 @@
 source("libraries.r")
 
-ui <- fluidPage(
-  
-  titlePanel("EnergyKiosk"),
-  
-  sidebarLayout(
-    sidebarPanel(
-      selectInput("car", "Select a car: ", choices = c(
+mobileUI <- list(
+  f7Row(
+    f7Col(
+      f7Card(
+        f7Badge("Mobile", color = "green"),
+        mapdeckOutput("map"), ##Map to select roof
+        f7SmartSelect("car", "Select a car: ", choices = c(
         "Tesla Model S Long Range",
         "Tesla Model X Long Range",
         "Tesla Model 3 Long Range",
@@ -24,12 +24,8 @@ ui <- fluidPage(
         "Polestar 2",              
         "Mercedes-Benz EQC",       
         "Mini Cooper SE")),
-      tableOutput("tab"),
-      actionButton("rayshade", "Go!",)
-    ),
-    
-    mainPanel(
-      leaflet::leafletOutput("map", height = "90vh")
+        f7Stepper("chargetime", "Hours of charge: ", min = 0, max = 24, value = 12, step = 1) ##Stepper to select the charge time for the car
+      )
     )
   )
 )
