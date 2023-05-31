@@ -1,18 +1,14 @@
-model;range_km;capacity_kwh
-Tesla Model S Long Range;652;100
-Tesla Model X Long Range;597;100
-Tesla Model 3 Long Range;576;82
-Tesla Model Y Long Range;525;75
-Ford Mustang Mach-E;491;75.7
-Chevrolet Bolt EV;417;65
-Porsche Taycan 4S;365;79.2
-Audi e-tron;357;95
-Volkswagen ID.4;402;82
-Nissan Leaf Plus;364;62
-BMW i3;246;42.2
-Hyundai Kona Electric;416;64
-Kia Niro EV;385;64
-Rivian R1T;505;135
-Polestar 2;375;78
-Mercedes-Benz EQC;354;80
-Mini Cooper SE;183;32.6
+model;max_range_km;battery_capacity_kwh;battery_charge_time;charge_type;url
+Tesla Model 3;580;54;9.5;AC;https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/2019_Tesla_Model_3_Performance_AWD_Front.jpg/800px-2019_Tesla_Model_3_Performance_AWD_Front.jpg
+Renault ZOE;395;52;9;AC;https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Renault_Zoe_charging.jpg/640px-Renault_Zoe_charging.jpg
+Volkswagen ID.3;424;58;7.5;AC;https://upload.wikimedia.org/wikipedia/commons/2/22/2020_Volkswagen_ID.3_1st_Front.jpg
+BMW i3;310;42.2;4.9;AC;https://upload.wikimedia.org/wikipedia/commons/d/d9/BMW_i3_%E2%80%93_Frontansicht%2C_5._Oktober_2014%2C_D%C3%BCsseldorf.jpg
+Nissan LEAF;385;40;8;AC;https://upload.wikimedia.org/wikipedia/commons/d/de/Nissan_Leaf_2018_%2831874639158%29_%28cropped%29.jpg
+Hyundai Kona EV;415;64;9.5;AC;https://upload.wikimedia.org/wikipedia/commons/a/a5/2019_Hyundai_Kona_Premium_1.0.jpg
+Audi e-tron;436;95;9;AC;https://upload.wikimedia.org/wikipedia/commons/1/1f/Audi_e-tron_55_quattro_IAA_2019_JM_0502.jpg
+Jaguar I-PACE;470;90;13.1;AC;https://upload.wikimedia.org/wikipedia/commons/3/37/2018_Jaguar_I-Pace_EV400_AWD_Front.jpg
+Kia Niro EV;455;64;9.5;AC;https://upload.wikimedia.org/wikipedia/commons/d/d6/Kia_Niro_%28SG2%29_PHEV_Leonberg_2022_1X7A0474.jpg
+Mercedes-Benz EQC;414;80;11.5;AC;https://upload.wikimedia.org/wikipedia/commons/4/44/Mercedes-Benz_EQC_400_4MATIC_AMG_Line_%28N_293%29_%E2%80%93_f_02042021.jpg
+Xiaomi Mi Electric Scooter Pro;45;0.1536;5.5;Plug-in;https://www.techadvisor.com/wp-content/uploads/2022/06/xiaomi-mi-scooter-pro-2-review-thumb.jpg?quality=50&strip=all
+Specialized Turbo Vado 4.0;95;0.6;3;Removable Battery;https://www.emotion-ebikes.de/wp-content/uploads/2022/01/specialized-turbo-vado-4-0-2022-768x436.jpg
+Riese & Müller Load 60;120;1;4.5;Removable Battery;https://www.emotion-ebikes.ch/wp-content/uploads/2019/11/riese-mueller-load-60-rohloff-2020.jpg

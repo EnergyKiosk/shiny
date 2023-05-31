@@ -2,3 +2,9 @@
 .config
 .local
 .Rproj.user
+
+/data-raw
+/data-processed
+
+www/qrcodes/*[0-9]*
+www/manual/*.pptx

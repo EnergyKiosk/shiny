@@ -1,0 +1,1 @@
+Run the prepare_data.R to generate all the QR Codes
