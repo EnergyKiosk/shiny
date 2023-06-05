@@ -75,13 +75,15 @@ write_sf(sisslerfeld, "data-processed/prepared_data.gpkg", "sisslerfeld", delete
 ###Weather data
 select_weather_icon <- function(input) {
   if(input <= 2.0) {
-    "<i class='fa-solid fa-cloud fa-xl'></i>"
+    "<i class='fa-solid fa-clouds fa-2xl' style='color: #919191;'></i>"
   } else if (input > 2.0 & input <= 6.0) {
-    "<i class='fa-solid fa-sun-cloud fa-xl'></i>"
+    "<i class='fa-duotone fa-cloud-sun fa-2xl' style='--fa-primary-color: #919191; --fa-secondary-color: #d6ba00;'></i>"
   } else {
-    "<i class='fa-solid fa-sun fa-xl'></i>"
+    "<i class='fa-solid fa-sun fa-2xl' style='color: #d6ba00;'></i>"
   }
 }
+
+Sys.setlocale("LC_TIME", "en_US.UTF-8")
 
 forecast_header <- read.delim("https://data.geo.admin.ch/ch.meteoschweiz.prognosen/punktprognosen/COSMO-E-all-stations.csv", skip=24, na = "-999.0", sep = ";", nrows=1) |> select(-X)
 forecast_data <- read.delim("https://data.geo.admin.ch/ch.meteoschweiz.prognosen/punktprognosen/COSMO-E-all-stations.csv", skip=27, na = "-999.0", sep = ";", header=F)
@@ -92,11 +94,12 @@ forecast_moe <- forecast_data[1:ncol(forecast_data)-1] %>% mutate(time = ymd_hm(
   na.omit()
 forecast_final <- mutate(forecast_moe, mean_col = rowMeans(select(forecast_moe, starts_with("DURSUN")), na.rm = TRUE)) |>
   mutate(date = date(time)) |>
-  mutate(wkday = wday(date, label = TRUE, abbr = FALSE)) |>
-  group_by(date, wkday) |>
+  group_by(date) |>
   summarise(sunhours = round(sum(mean_col) / 3600, 2)) |>
   head(3) |>
-  mutate(icon = sapply(sunhours, select_weather_icon))
+  mutate(icon = sapply(sunhours, select_weather_icon)) |>
+  mutate(date = format(date, format = "%a, %d. %b %Y")) |>
+  select(date, icon)
 
 write_csv(forecast_final, "data-processed/weather_data.csv", append = FALSE)
 

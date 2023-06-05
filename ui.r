@@ -35,7 +35,7 @@ ui <-
       ),
       tags$script(
         HTML("
-          function openNav(id) {
+            function openNav(id) {
               document.getElementById(id).style.width = '100%';
             }
             
@@ -46,7 +46,7 @@ ui <-
       )
     ),
     div(id = "overlay_question", class = "overlay",
-        slickROutput("slickr", height="100%"),
+        slickROutput("slickr"),
         tags$a(
           href = "javascript:void(0)",
           class = "closebtn",
@@ -61,24 +61,27 @@ ui <-
           div(class = "center",
             style = "height: 45vh; background-color: white; border: 2px solid black; border-radius: 5px;",
             h1("Sisslerfeld", img(src = "info/sisslerfeld.jpg", height = "100px")),
-            a(href = "https://www.sisslerfeld.ch/", "Webseite Sisslerfeld"),
+            a(href = "https://www.sisslerfeld.ch/", "Website Sisslerfeld", style = "font-size:24px;"),
             hr(),
-            p("Im Sisslerfeld liegt die grösste Arbeitsplatzzone des Kantons Aargau. Hier sollen gute Arbeitsplätze entstehen. 
-              Dabei sollen die schöne Landschaft gestärkt und das Verkehrswachstum begrenzt werden. Damit dies gelingt, braucht es 
-              Rahmenbedingungen und Koordination. Die Gemeinden Eiken, Münchwilen, Sisseln und Stein, der Regionalplanungsverband 
-              Fricktal Regio und der Kanton Aargau, arbeiten darum gemeinsam dafür, dass das Sisslerfeld eine Erfolgsgeschichte 
-              für alle wird. Auch die Stadt Bad Säckingen und der deutsche Regionalverband wirken mit.")
+            p("The largest employment zone in the canton of Aargau is located in the Sisslerfeld. Good jobs 
+              are to be created here. At the same time, the beautiful landscape should be strengthened and traffic growth limited. 
+              For this to succeed, framework conditions and coordination are needed. The municipalities of Eiken, Münchwilen, 
+              Sisseln and Stein, the Fricktal Regio Regional Planning Association and the Canton of Aargau are therefore working 
+              together to make the Sisslerfeld a success story for everyone. The town of Bad Säckingen and the German regional 
+              association are also involved.", style = "font-size:24px;")
           )
         ), 
         column(
           width = 6,
           div(class = "center",
               style = "height: 45vh; background-color: white; border: 2px solid black; border-radius: 5px;",
-              h1("EnergyLab Booster", img(src = "info/energylabBooster.jpg", height = "100px")),
-              a(href = "https://www.energylab.site/about/", "Webseite EnergyLab"),
+              h1("Energy Living Lab", img(src = "info/energylivinglab.png", height = "100px")),
+              a(href = "https://energylivinglab.com/de/", "Website Energy Living Lab", style = "font-size:24px;"),
               hr(),
-              p("The organization of the Energy Lab follows a holocratic structure for optimal agility and open innovation. It consists of the following bodies: 
-              Leading House, Lab Team, Pitch Jury, Consortium Experts, Project Teams and Advisory Board.")
+              p("The Energy Living Lab Association (ELLA) was founded in 2020 as a spin-off to replicate, disseminate and communicate 
+                Living Lab approaches in the energy sector. It supports an ecosystem of actors in using the methods and tools and invites 
+                people and institutions from the public, private, governmental and academic sectors as well as civil society to co-create 
+                solutions for the decarbonisation of energy supply.", style = "font-size:24px;")
           )
         )
       ),
@@ -87,23 +90,28 @@ ui <-
           width = 6,
           div(class = "center",
               style = "height: 45vh; background-color: white; border: 2px solid black; border-radius: 5px;",
-              h1("Ben Sawicki - Opportunity Sisslerfeld", img(src = "info/eth.png", height = "100px")),
-              a(href = "https://ladeplan.ch/wp-content/uploads/2022/04/opendata.html", "Webseite Opportunity Sisslerfeld"), 
+              h1("NCCR 'Dependable, ubiquitous automation'", img(src = "info/nccr_automation.png", height = "100px")),
+              a(href = "https://nccr-automation.ch", "Website NCCR-Automation", style = "font-size:24px;"), 
               hr(),
-              p("Video Ben")
+              p("NCCRs are interdisciplinary research networks funded by the Swiss National Science Foundation (SNSF). 
+              They support research in areas that are of strategic importance for the future of Swiss science, economy and society. 
+              The National Centre of Competence in Research «Dependable, ubiquitous automation», NCCR Automation for short, 
+                investigates new approaches to the control of complex automated systems and implements them in concrete applications in practice.
+                Through networked research, the development of new technologies and education, the NCCR aims to strengthen Switzerland's leading role 
+                in automation and control technology.", style = "font-size:24px;")
           )
         ),
         column(
           width = 6,
           div(class = "center",
               style = "height: 45vh; background-color: white; border: 2px solid black; border-radius: 5px;",
-              h1("ZHAW Forschungsgruppe Geoinfromatik", img(src = "info/zhaw_lsfm_iunr_4f.png", height = "100px")),
-              a(href = "https://www.zhaw.ch/de/lsfm/institute-zentren/iunr/geooekologie/geoinformatik/", "Webseite FG Geoinformatik"),
+              h1("ZHAW Geoinformatics Research Group", img(src = "info/zhaw_lsfm_iunr_4f.png", height = "100px")),
+              a(href = "https://www.zhaw.ch/de/lsfm/institute-zentren/iunr/geooekologie/geoinformatik/", "Website Geoinformatics Research Group", style = "font-size:24px;"),
               hr(),
-              p("Die Forschungsgruppe Geoinformatik beschäftigt sich mit der Entwicklung, Anwendung und Validation innovativer Methoden zur Verarbeitung und Analyse 
-              raumzeitlicher Information. Den inhaltlichen Rahmen bilden dabei Themen im Bereich Umwelt und Natürliche Ressourcen. Als Kompetenzzentrum für den 
-              praxisbezogenen Umgang mit Daten, Software und Infrastruktur bietet die Gruppe lösungs- und kundenorientierte Beratung zur Planung und Umsetzung von 
-              Projekten im Bereich Geoinformatik.")
+              p("The Geoinformatics Research Group focuses on the development, application and validation of innovative methods 
+                for processing and analysing spatiotemporal data on topics relating to the environment and natural resources. 
+                As a centre of excellence for industry-focused approaches to data, software and infrastructure, the Group provides 
+                solutions-based and customer-focused advice on the planning and implementation of geoinformatics projects.", style = "font-size:24px;")
           )
         )
       ),
@@ -131,9 +139,10 @@ ui <-
         id = "mySidebarPanel",
         tabsetPanel(
           tabPanel(
-            icon("solar-panel"),
-            tags$h4("Potential solar"),
-            plotOutput("plot_municipality", height = "30vh"),
+            div(class="fa-solid fa-solar-panel fa-xl"),
+            tags$h4("Solar roof potential"),
+            #plotOutput("plot_municipality", height = "15vh"),
+            plotlyOutput("plot_sunburst", height = "40vh"),
             tags$hr(),
             tags$h4("Neighbourhood ranking"),
             div(
@@ -146,11 +155,11 @@ ui <-
               )
               
             ),
-            plotlyOutput("plot_ranking", height = "30vh")
+            plotlyOutput("plot_ranking", height = "25vh")
           ),
           tabPanel(
-            icon("car-side"),
-            tags$h4("Vehicle Information"),
+            div(class="fa-solid fa-car-side fa-xl"),
+            tags$h4("Vehicle information"),
             fluidRow(
               column(
                 width = 7,
@@ -170,18 +179,8 @@ ui <-
                     "Mercedes-Benz EQC",
                     "Xiaomi Mi Electric Scooter Pro",
                     "Specialized Turbo Vado 4.0",
-                    "Riese & Müller Load 60"
+                    "Riese & Mueller Load 60"
                   )
-                )
-              ),
-              column(
-                width = 5,
-                sliderTextInput(
-                  inputId = "charginghours",
-                  label = "Charging hours:",
-                  choices = "slider",
-                  grid = TRUE,
-                  hide_min_max = FALSE
                 )
               )
             ),
@@ -193,16 +192,34 @@ ui <-
             ),
             fluidRow(
               column(
-                width = 8,
+                width = 12, align="center",
                 uiOutput("carimage")
               )
             ),
             tags$hr(),
-            tags$h4("Weather Information"),
+            tags$h4("Weather information"),
             textOutput("currentTime"),
             tableOutput("tab_weather"),
             tags$hr(),
-            actionButton("rayshade", "Go!", )
+            fluidRow(
+              column(
+                width = 7,
+                sliderTextInput(
+                  inputId = "charginghours",
+                  label = "Charging hours:",
+                  choices = "slider",
+                  grid = TRUE,
+                  hide_min_max = FALSE
+                )
+              ),
+              column(
+                width = 5,
+                div(
+                  style = "margin-top: 30px; margin-left: 70px",
+                  actionButton("traveling_distance_go",  HTML("Calculate possible<br/>traveling distance!"))
+                )
+              )
+            )
           )
         )
       ),

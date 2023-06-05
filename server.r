@@ -5,10 +5,8 @@ server <- function(input, output, session) {
   
   #Prepare and show manual
   output$slickr <- renderSlickR({
-    imgs <- list.files("www/manual/", pattern=".PNG", full.names = TRUE)
-    slickR(imgs,
-           height = "100%",
-           width = "auto") +
+    imgs <- list.files("www/manual/", pattern=".jpg", full.names = TRUE)
+    slickR(imgs) +
     settings(
         dots = TRUE,
         arrows = TRUE
@@ -47,34 +45,171 @@ server <- function(input, output, session) {
           color = "red",
           opacity = 1,
           weight = 1,
-          group = "selected_solardach"
+          group = "selected_solardach",
+          options = list(zIndex = 600)
         )
+    
+    selected_solardach <- selected_solardach() |>
+      st_centroid() #Get point of selected location
+    
+    leafletProxy("map", data = selected_solardach, session) |>
+      addAwesomeMarkers(
+        icon = makeAwesomeIcon(
+          icon = 'house',
+          iconColor = 'black',
+          library = 'fa',
+          markerColor = "red"
+        ),
+        group = "selected_solardach",
+        options = list(zIndex = 700)
+      )
   })
   
   #########################################################################################################################
   # Solarpanel tab
   
   ##Gemeindeinformationen
-  output$plot_municipality <- renderPlot({
-    color_highlight = c("#fcdc00", "#009946", "#0094de", "#f00001")
-    img_url = c("https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Wappen_Eiken.svg/1200px-Wappen_Eiken.svg.png", 
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/CHE_Sisseln_COA.svg/120px-CHE_Sisseln_COA.svg.png",
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/CHE_M%C3%BCnchwilen_COA.svg/1200px-CHE_M%C3%BCnchwilen_COA.svg.png", 
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/CHE_Stein_COA.svg/120px-CHE_Stein_COA.svg.png")
-    
-    plots <- solardach |>
+  # output$plot_municipality <- renderPlot({
+  #   color_highlight = c("#fcdc00", "#009946", "#0094de", "#f00001")
+  #   img_url = c("https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Wappen_Eiken.svg/1200px-Wappen_Eiken.svg.png", 
+  #               "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/CHE_Sisseln_COA.svg/120px-CHE_Sisseln_COA.svg.png",
+  #               "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/CHE_M%C3%BCnchwilen_COA.svg/1200px-CHE_M%C3%BCnchwilen_COA.svg.png", 
+  #               "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/CHE_Stein_COA.svg/120px-CHE_Stein_COA.svg.png")
+  #   
+  #   plots <- solardach |>
+  #     st_drop_geometry() |>
+  #     group_by(Municipality, Has_Solar) |>
+  #     summarize(Electricity_Yield = sum(Electricity_Yield)) |>
+  #     pivot_wider(names_from = Has_Solar, values_from  = Electricity_Yield) |>
+  #     rename(No_Solar = `FALSE`, Has_Solar = `TRUE`) |>
+  #     mutate(Percent = Has_Solar / No_Solar) |>
+  #     na.omit() |>
+  #     cbind(color_highlight, img_url) |>
+  #     rename(color_highlight = "...5", img_url = "...6") |>
+  #     pmap(~big_number_donut_plot(value = ..4, municipality_text_label = ..1, img_url = ..6, font_family = "Inter", highlight_color = ..5))
+  # 
+  #   ggarrange(plots[[1]], plots[[2]], plots[[3]], plots[[4]], ncol = 4, nrow = 1) + bgcolor("#f5f5f5")
+  # })
+  
+  output$plot_sunburst <- renderPlotly({
+    df <- solardach |>
+      mutate(selected_area = ifelse(GWR_EGID %in% included_ranked_solarroofs()$GWR_EGID, TRUE, FALSE)) |>
+      mutate(selected_roof = ifelse(GWR_EGID == selected_solardach()$GWR_EGID, TRUE, FALSE)) |>
       st_drop_geometry() |>
-      group_by(Municipality, Has_Solar) |>
+      group_by(Municipality, Has_Solar, selected_area, selected_roof) |>
       summarize(Electricity_Yield = sum(Electricity_Yield)) |>
-      pivot_wider(names_from = Has_Solar, values_from  = Electricity_Yield) |>
-      rename(No_Solar = `FALSE`, Has_Solar = `TRUE`) |>
-      mutate(Percent = Has_Solar / No_Solar) |>
+      ungroup() |>
       na.omit() |>
-      cbind(color_highlight, img_url) |>
-      rename(color_highlight = "...5", img_url = "...6") |>
-      pmap(~big_number_donut_plot(value = ..4, municipality_text_label = ..1, img_url = ..6, font_family = "Inter", highlight_color = ..5))
+      tidyr::complete(Municipality, Has_Solar, selected_area, selected_roof, fill = list(Electricity_Yield = 0)) |>
+      pivot_wider(names_from = c(Has_Solar, selected_area, selected_roof), values_from  = Electricity_Yield) |>
+      rename(Not_used = `FALSE_FALSE_FALSE`, 
+             Not_used_Area = `FALSE_TRUE_FALSE`, 
+             Not_used_Area_Roof = `FALSE_TRUE_TRUE`, 
+             Used = `TRUE_FALSE_FALSE`, 
+             Used_Area = `TRUE_TRUE_FALSE`,
+             Used_Area_Roof = `TRUE_TRUE_TRUE`) |>
+      select(Municipality, Not_used, Not_used_Area, Not_used_Area_Roof, Used, Used_Area, Used_Area_Roof) |> 
+      rowwise() |>
+      mutate(
+        Not_used_Area = Not_used_Area + Not_used_Area_Roof,
+        Used_Area = Used_Area + Used_Area_Roof) |>
+      mutate(Not_used = Not_used + Not_used_Area,
+             Used = Used + Used_Area) |>
+      pivot_longer(
+        cols = -Municipality,
+        names_to = "labels",
+        values_to = "values"
+      ) |>
+      mutate(level = sapply(labels, extract_level),
+             labels = case_when(
+               grepl("^Used", labels) ~ "Used",
+               grepl("^Not_used", labels) ~ "Not Used",
+               TRUE ~ labels
+             )) |>
+      select(Municipality, labels, level, values)
     
-    ggarrange(plots[[1]], plots[[2]], plots[[3]], plots[[4]], ncol = 2, nrow = 2)
+    df <- df |>
+      rbind(df |>
+            filter(level == "2") |>
+            group_by(Municipality) |>
+            summarize(values = sum(values)) |>
+            mutate(labels = "Total",
+                   level = "1") |>
+            select(Municipality, labels, level, values)
+    )
+     df <- df |> 
+      rbind(df |>
+              filter(labels == "Total") |>
+              group_by(labels) |>
+              summarize(values = sum(values)) |>
+              mutate(labels = "Total",
+                     level = "0",
+                     Municipality = "Total") |>
+              select(Municipality, labels, level, values)
+      )
+
+    transformed_df <- as.data.frame(t(apply(df, 1, transform_data)))
+    colnames(transformed_df) <- c("labels", "values", "parents", "ids")
+    
+    transformed_df <- transformed_df |>
+      rowwise() |>
+      mutate(percentage = round(as.integer(values) / as.integer(transformed_df$values[transformed_df$labels == "Total"]) * 100, 2))
+    
+    plot_ly(data = transformed_df, 
+            ids = ~ids, 
+            labels= ~labels, 
+            parents = ~parents, 
+            values= ~values, 
+            type='sunburst',  
+            text = ~paste0(percentage, "%"),
+            branchvalues = "total",
+            maxdepth = 5) |> 
+      layout(
+        margin = list(l = 0, r = 0, b = 0, t = 0),
+        hoverlabel = list(bgcolor = "black"),
+        plot_bgcolor = "#f5f5f5",
+        paper_bgcolor = "#f5f5f5",
+        colorway = c("#f00001", "#fcdc00", "#009946", "#0094de"),
+        images = list(
+          list(source = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Wappen_Eiken.svg/1200px-Wappen_Eiken.svg.png",
+               xref = "paper",
+               yref = "paper",
+               x= 0.1,
+               y= 1,
+               sizex = 0.2,
+               sizey = 0.2,
+               opacity = 0.8
+          ),
+          list(source = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/CHE_Sisseln_COA.svg/120px-CHE_Sisseln_COA.svg.png",
+               xref = "paper",
+               yref = "paper",
+               x= 0.1,
+               y= 0.2,
+               sizex = 0.2,
+               sizey = 0.2,
+               opacity = 0.8
+          ),
+          list(source = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/CHE_M%C3%BCnchwilen_COA.svg/1200px-CHE_M%C3%BCnchwilen_COA.svg.png",
+               xref = "paper",
+               yref = "paper",
+               x= 0.8,
+               y= 0.2,
+               sizex = 0.2,
+               sizey = 0.2,
+               opacity = 0.8
+          ),
+          list(source = "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/CHE_Stein_COA.svg/120px-CHE_Stein_COA.svg.png",
+               xref = "paper",
+               yref = "paper",
+               x= 0.8,
+               y= 1,
+               sizex = 0.2,
+               sizey = 0.2,
+               opacity = 0.8
+          )
+        )
+      ) |>
+      config(displayModeBar = FALSE)
   })
   
   ###################################################
@@ -94,19 +229,21 @@ server <- function(input, output, session) {
       clearGroup("ranking") |>
       clearGroup("ranking_top_3") |>
       clearGroup("champ_distance") |>
+      clearGroup("range_calc") |>
       addPolygons(
         fillOpacity = 0.5,
         layerId = champ_distance_circle$GWR_EGID,
         color = "orange",
         opacity = 1,
         weight = 1,
-        group = "champ_distance"
+        group = "champ_distance",
+        options = list(zIndex = 800)
       ) 
   })
   
   ###################################################
   #Ranking Nachbarschaft
-  ranking_list <- reactive({
+  included_ranked_solarroofs <- reactive({
     if(input$rankingtype == "Street") {
       ranking <- solardach |>
         filter(Street == selected_solardach()$Street, ZIP == selected_solardach()$ZIP) |>
@@ -126,61 +263,69 @@ server <- function(input, output, session) {
         arrange(desc(Electricity_Yield)) |>
         mutate(Rank = row_number())
     }
-    
-    #Hightlight all solar roofs in bbox or street
-    leafletProxy("map", data = ranking, session) |>
+    ranking
+  })
+
+  #Highlight all solar roofs in bbox or street
+  observe({
+    leafletProxy("map", data = included_ranked_solarroofs(), session) |>
       clearGroup("ranking") |>
       clearGroup("ranking_top_3") |>
       clearGroup("champ_distance") |>
+      clearGroup("range_calc") |>
       addPolygons(
         fillOpacity = 0.5,
-        layerId = ranking$GWR_EGID,
+        layerId = included_ranked_solarroofs()$GWR_EGID,
         color = "orange",
         opacity = 1,
         weight = 1,
-        group = "ranking"
+        group = "ranking",
+        options = list(zIndex = 800)
       ) 
-    
-    #Hightlight the top 3 with gold, silver, bronze
-    ranking_top_3 <- ranking |> head(3)
-    leafletProxy("map", data = ranking_top_3, session) |>
+  })
+  
+  #Highlight the top 3 with gold, silver, bronze
+  observe({
+    ranking_top_3 <- included_ranked_solarroofs() |> head(3)
+    leafletProxy("map", data =ranking_top_3, session) |>
       clearGroup("ranking_top_3") |>
+      clearGroup("champ_distance") |>
+      clearGroup("range_calc") |>
       addPolygons(
         fillOpacity = 1,
         layerId = ranking_top_3$GWR_EGID,
         color = unname(colorsSchema[names(colorsSchema) %in% ranking_top_3$Rank]),
         opacity = 1,
         weight = 1,
-        group = "ranking_top_3"
-      ) 
+        group = "ranking_top_3",
+        options = list(zIndex = 800)
+      )
     
     #Add icon for top 3
-    ranking_top_3_points <- ranking_top_3 |>
-      st_centroid()
+    ranking_top_3_points <- ranking_top_3 |> st_centroid()
     leafletProxy("map", data = ranking_top_3_points, session) |>
       addAwesomeMarkers(
         icon = icons[ranking_top_3_points$Rank],
         group = "ranking_top_3"
       )
+  })
+  
+  #Show plot of ranking
+  output$plot_ranking <- renderPlotly({
+    ranking_top_3 <- included_ranked_solarroofs() |> head(3)
     
     #Check if the selected roof is already part of the top 3 otherwise add it as well for the plot
     ranking_top_3 <- ranking_top_3 |> mutate(Rank_label = as.character(Rank))
     if(!any(ranking_top_3$GWR_EGID == selected_solardach()$GWR_EGID)) {
-      you_ranking <- ranking |> filter(GWR_EGID == selected_solardach()$GWR_EGID)
+      you_ranking <- included_ranked_solarroofs() |> filter(GWR_EGID == selected_solardach()$GWR_EGID)
       you_ranking$Rank_label <- "You"
-      ranking_top_3 <- ranking_top_3 |>
-        rbind(you_ranking)
+      ranking_top_3 <- ranking_top_3 |> rbind(you_ranking)
     } else {
       ranking_top_3 <- ranking_top_3 |> 
         mutate(Rank_label = replace(Rank_label, GWR_EGID == selected_solardach()$GWR_EGID, "You"))
     }
     
-    ranking_top_3
-  })
-  
-  #Show plot of ranking
-  output$plot_ranking <- renderPlotly({
-    ranking_list() |>
+    ranking_top_3 |>
       st_drop_geometry() |>
       mutate(Adress = paste(Street, Number)) |>
       plot_ly(
@@ -195,8 +340,10 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE) |>
       layout(hovermode = TRUE,
              showlegend = FALSE,
-             xaxis = list(title = "Solar roof"),
-             yaxis = list(title = "Electricity Yield"))
+             xaxis = list(title = "Address"),
+             yaxis = list(title = "Possible electricity yield"),
+             plot_bgcolor = "#f5f5f5",
+             paper_bgcolor = "#f5f5f5")
   })
 
   ######################################################################################################################
@@ -208,7 +355,9 @@ server <- function(input, output, session) {
   
   #Update slider with max hours of charging time
   observeEvent(input$car, {
-    times <- seq(from = 0, to = selected_car()$battery_charge_time, by = 0.5)
+    times <- seq(from = 0, 
+                 to = 24, #selected_car()$battery_charge_time, 
+                 by = 1)
     slider_labels <- lapply(times, function(hours) {
       decimal_part <- hours - floor(hours)
       minutes <- decimal_part * 60
@@ -221,24 +370,26 @@ server <- function(input, output, session) {
   ##Car information
   output$vehicle_info <- renderTable({
     selected_car() |>
-      select(model, max_range_km, battery_capacity_kwh) |>
+      select(max_range_km, battery_capacity_kwh, battery_charge_time, charge_type) |>
       mutate(max_range_km = formatC(max_range_km, format="f", big.mark=",", digits=1),
              battery_capacity_kwh = formatC(battery_capacity_kwh, format="f", big.mark=",", digits=1)) |>
-      rename("Model" = model, 
-            "Max range (km)" = max_range_km, 
-            "Battery Capacity (kwh)" = battery_capacity_kwh)
+      rename("Max range (km)" = max_range_km, 
+            "Battery Capacity (kwh)" = battery_capacity_kwh,
+            "Charge time (h)" = battery_charge_time,
+            "Charge type" = charge_type)
   })
   output$carimage <- renderUI({
     url <- cars |> filter(model == input$car) |> pull(url)
-    tags$img(src = url, width = "100%", height="auto")
+    tags$img(src = url, width = "50%", height="auto")
   })
   
   ##Weather information
   output$tab_weather <- function() {
+    colnames(weather_data) <- NULL
     table <- weather_data |> 
       t() |> 
-      kable(format = "html", escape = F) |>
-      kable_styling(bootstrap_options = "striped")
+      kable(format = "html", escape = F, align = rep("c", 3)) |>
+      kable_styling(bootstrap_options = c("striped", "hover"))
   }
   
   output$currentTime <- renderText({
@@ -247,13 +398,16 @@ server <- function(input, output, session) {
   })
   
   ##Generate isoline for car
-  observeEvent(input$rayshade, {
+  observeEvent(input$traveling_distance_go, {
     selected_solardach <- selected_solardach() |>
       st_centroid() #Get point of selected location
     
-    charging_hours <- as.numeric(hm(input$charginghours), "hours")
+    selected_charging_hours <- as.numeric(hm(input$charginghours), "hours")
+    max_charging_speed_car_per_hour <- selected_car()$battery_capacity_kwh / selected_car()$battery_charge_time
+    max_charging_speed_roof_per_hour <- selected_solardach$Electricity_Yield / 365 / 24
+    actual_charging_speed_per_hour <- ifelse(max_charging_speed_roof_per_hour >= max_charging_speed_car_per_hour, max_charging_speed_car_per_hour, max_charging_speed_roof_per_hour)
 
-    range_per_day_km <- ceiling((selected_car()$max_range_km / selected_car()$battery_capacity_kwh) * (selected_solardach$Electricity_Yield / 365 / 24 * charging_hours))
+    range_per_day_km <- ceiling(selected_car()$max_range_km * ((actual_charging_speed_per_hour * selected_charging_hours) / (max_charging_speed_car_per_hour * selected_car()$battery_charge_time)))
     range_calc <- ifelse(range_per_day_km >= selected_car()$max_range_km, selected_car()$max_range_km, range_per_day_km)
     range_calc <- range_calc |> append(selected_car()$max_range_km)
       
@@ -261,7 +415,7 @@ server <- function(input, output, session) {
       selected_solardach,
       datetime = Sys.time(),
       traffic = FALSE,
-      range = range_calc * 1000,
+      range = range_calc * 1000 / 2, #Half the distance to get there and back
       range_type = "distance",
       routing_mode = "short",
       transport_mode = "car") |>
@@ -274,13 +428,17 @@ server <- function(input, output, session) {
       
     leafletProxy("map", data = isolines, session) |>
       flyToBounds(bounds[1], bounds[2], bounds[3], bounds[4]) |>
+      clearGroup("ranking") |>
+      clearGroup("ranking_top_3") |>
+      clearGroup("champ_distance") |>
       clearGroup("range_calc") |>
       clearControls() |>
       addPolygons(
         fillColor = ~ pal(isolines$title),
         fillOpacity = 0.2,
         stroke = FALSE,
-        group = "range_calc"
+        group = "range_calc",
+        options = list(zIndex = 300)
       ) |>
       addLegend(
         "bottomright",
@@ -290,9 +448,5 @@ server <- function(input, output, session) {
         opacity = 1,
         group = "range_calc"
       )
-      # addLayersControl(
-      #   overlayGroups = c("range_calc"),
-      #   options = layersControlOptions(collapsed = FALSE)
-      # )
   })
 }
