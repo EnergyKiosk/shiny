@@ -5,12 +5,8 @@ server <- function(input, output, session) {
   
   #Prepare and show manual
   output$slickr <- renderSlickR({
-    imgs <- list.files("www/manual/", pattern=".jpg", full.names = TRUE)
-    slickR(imgs) +
-    settings(
-        dots = TRUE,
-        arrows = TRUE
-    )
+    imgs <- sort(list.files("www/manual/2560x1440/", pattern=".PNG", full.names = TRUE), decreasing = TRUE)
+    slickR(imgs)
   })
   observeEvent(input$manualbutton, {
     runjs("openNav(id = 'overlay_question');")
@@ -39,6 +35,7 @@ server <- function(input, output, session) {
   observe({
       leafletProxy("map", data = selected_solardach(), session) |>
         clearGroup("selected_solardach") |>
+        addMapPane("selected_solardach", zIndex = 320) |>
         addPolygons(
           fillOpacity = 0.5,
           layerId = selected_solardach()$GWR_EGID,
@@ -46,13 +43,14 @@ server <- function(input, output, session) {
           opacity = 1,
           weight = 1,
           group = "selected_solardach",
-          options = list(zIndex = 600)
+          options = pathOptions(pane = "selected_solardach")
         )
     
     selected_solardach <- selected_solardach() |>
       st_centroid() #Get point of selected location
     
     leafletProxy("map", data = selected_solardach, session) |>
+      addMapPane("selected_solardach_icon", zIndex = 320) |>
       addAwesomeMarkers(
         icon = makeAwesomeIcon(
           icon = 'house',
@@ -61,7 +59,7 @@ server <- function(input, output, session) {
           markerColor = "red"
         ),
         group = "selected_solardach",
-        options = list(zIndex = 700)
+        options = pathOptions(pane = "selected_solardach_icon")
       )
   })
   
@@ -97,11 +95,11 @@ server <- function(input, output, session) {
       mutate(selected_roof = ifelse(GWR_EGID == selected_solardach()$GWR_EGID, TRUE, FALSE)) |>
       st_drop_geometry() |>
       group_by(Municipality, Has_Solar, selected_area, selected_roof) |>
-      summarize(Electricity_Yield = sum(Electricity_Yield)) |>
+      summarize(Electricity_Yield = sum(Electricity_Yield, na.rm = TRUE)) |>
       ungroup() |>
       na.omit() |>
       tidyr::complete(Municipality, Has_Solar, selected_area, selected_roof, fill = list(Electricity_Yield = 0)) |>
-      pivot_wider(names_from = c(Has_Solar, selected_area, selected_roof), values_from  = Electricity_Yield) |>
+      pivot_wider(names_from = c(Has_Solar, selected_area, selected_roof), values_from = Electricity_Yield) |>
       rename(Not_used = `FALSE_FALSE_FALSE`, 
              Not_used_Area = `FALSE_TRUE_FALSE`, 
              Not_used_Area_Roof = `FALSE_TRUE_TRUE`, 
@@ -172,40 +170,28 @@ server <- function(input, output, session) {
         colorway = c("#f00001", "#fcdc00", "#009946", "#0094de"),
         images = list(
           list(source = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Wappen_Eiken.svg/1200px-Wappen_Eiken.svg.png",
-               xref = "paper",
-               yref = "paper",
-               x= 0.1,
-               y= 1,
-               sizex = 0.2,
-               sizey = 0.2,
-               opacity = 0.8
+               xref = "paper", yref = "paper",
+               x = 0.1, y = 1,
+               sizex = 0.2, sizey = 0.2,
+               opacity = 1
           ),
           list(source = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/CHE_Sisseln_COA.svg/120px-CHE_Sisseln_COA.svg.png",
-               xref = "paper",
-               yref = "paper",
-               x= 0.1,
-               y= 0.2,
-               sizex = 0.2,
-               sizey = 0.2,
-               opacity = 0.8
+               xref = "paper", yref = "paper",
+               x = 0.1, y = 0.2,
+               sizex = 0.2, sizey = 0.2,
+               opacity = 1
           ),
           list(source = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/CHE_M%C3%BCnchwilen_COA.svg/1200px-CHE_M%C3%BCnchwilen_COA.svg.png",
-               xref = "paper",
-               yref = "paper",
-               x= 0.8,
-               y= 0.2,
-               sizex = 0.2,
-               sizey = 0.2,
-               opacity = 0.8
+               xref = "paper", yref = "paper",
+               x = 0.8, y = 0.2,
+               sizex = 0.2, sizey = 0.2,
+               opacity = 1
           ),
           list(source = "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/CHE_Stein_COA.svg/120px-CHE_Stein_COA.svg.png",
-               xref = "paper",
-               yref = "paper",
-               x= 0.8,
-               y= 1,
-               sizex = 0.2,
-               sizey = 0.2,
-               opacity = 0.8
+               xref = "paper", yref = "paper",
+               x = 0.8, y = 1,
+               sizex = 0.2, sizey = 0.2,
+               opacity = 1
           )
         )
       ) |>
@@ -230,6 +216,7 @@ server <- function(input, output, session) {
       clearGroup("ranking_top_3") |>
       clearGroup("champ_distance") |>
       clearGroup("range_calc") |>
+      addMapPane("champ_distance", zIndex = 300) |>
       addPolygons(
         fillOpacity = 0.5,
         layerId = champ_distance_circle$GWR_EGID,
@@ -237,7 +224,7 @@ server <- function(input, output, session) {
         opacity = 1,
         weight = 1,
         group = "champ_distance",
-        options = list(zIndex = 800)
+        options = pathOptions(pane = "champ_distance")
       ) 
   })
   
@@ -273,14 +260,14 @@ server <- function(input, output, session) {
       clearGroup("ranking_top_3") |>
       clearGroup("champ_distance") |>
       clearGroup("range_calc") |>
+      addMapPane("ranking", zIndex = 315) |>
       addPolygons(
-        fillOpacity = 0.5,
         layerId = included_ranked_solarroofs()$GWR_EGID,
-        color = "orange",
-        opacity = 1,
-        weight = 1,
+        color = "darkorange",
+        fill = FALSE,
+        weight = 7,
         group = "ranking",
-        options = list(zIndex = 800)
+        options = pathOptions(pane = "ranking")
       ) 
   })
   
@@ -291,6 +278,7 @@ server <- function(input, output, session) {
       clearGroup("ranking_top_3") |>
       clearGroup("champ_distance") |>
       clearGroup("range_calc") |>
+      addMapPane("ranking_top_3", zIndex = 316) |>
       addPolygons(
         fillOpacity = 1,
         layerId = ranking_top_3$GWR_EGID,
@@ -298,15 +286,17 @@ server <- function(input, output, session) {
         opacity = 1,
         weight = 1,
         group = "ranking_top_3",
-        options = list(zIndex = 800)
+        options = pathOptions(pane = "ranking_top_3")
       )
     
     #Add icon for top 3
     ranking_top_3_points <- ranking_top_3 |> st_centroid()
     leafletProxy("map", data = ranking_top_3_points, session) |>
+      addMapPane("ranking_top_3", zIndex = 316) |>
       addAwesomeMarkers(
         icon = icons[ranking_top_3_points$Rank],
-        group = "ranking_top_3"
+        group = "ranking_top_3",
+        options = pathOptions(pane = "ranking_top_3")
       )
   })
   
@@ -389,7 +379,7 @@ server <- function(input, output, session) {
     table <- weather_data |> 
       t() |> 
       kable(format = "html", escape = F, align = rep("c", 3)) |>
-      kable_styling(bootstrap_options = c("striped", "hover"))
+      kable_styling(bootstrap_options = c("striped"))
   }
   
   output$currentTime <- renderText({
@@ -410,15 +400,17 @@ server <- function(input, output, session) {
     range_per_day_km <- ceiling(selected_car()$max_range_km * ((actual_charging_speed_per_hour * selected_charging_hours) / (max_charging_speed_car_per_hour * selected_car()$battery_charge_time)))
     range_calc <- ifelse(range_per_day_km >= selected_car()$max_range_km, selected_car()$max_range_km, range_per_day_km)
     range_calc <- range_calc |> append(selected_car()$max_range_km)
+    
+    transport_mode <- ifelse(selected_car()$vehicle_type %in% c("scooter", "bike"), "pedestrian", "car")
       
     isolines <- hereR::isoline(
       selected_solardach,
       datetime = Sys.time(),
       traffic = FALSE,
-      range = range_calc * 1000 / 2, #Half the distance to get there and back
+      range = range_calc * 1000,
       range_type = "distance",
       routing_mode = "short",
-      transport_mode = "car") |>
+      transport_mode = transport_mode) |>
       cbind(title = c("Charging time range", "Max range"))
 
     myPalette <- c("#ff8800", "#fff700")
@@ -433,12 +425,13 @@ server <- function(input, output, session) {
       clearGroup("champ_distance") |>
       clearGroup("range_calc") |>
       clearControls() |>
+      addMapPane("range_calc", zIndex = 300) |>
       addPolygons(
         fillColor = ~ pal(isolines$title),
         fillOpacity = 0.2,
         stroke = FALSE,
         group = "range_calc",
-        options = list(zIndex = 300)
+        options = pathOptions(pane = "range_calc")
       ) |>
       addLegend(
         "bottomright",

@@ -55,7 +55,7 @@ solardach <- read_sf("data-raw/solarenergie-eignung-daecher_2056.gpkg/SOLKAT_DAC
     STROMERTRAG = sum(STROMERTRAG),
     DF_UID = first(DF_UID)) |>
   st_cast() |>
-  left_join(gebaeudeadressverzeichnis, by = c("GWR_EGID" = "BDG_EGID")) |>
+  right_join(gebaeudeadressverzeichnis, by = c("GWR_EGID" = "BDG_EGID")) |>
   rename(Street = STN_LABEL, Number = ADR_NUMBER, Area = FLAECHE, Municipality = MUNICIPALITY, Canton = COM_CANTON, Electricity_Yield = STROMERTRAG) |>
   rowwise() |>
   mutate(qrcode = create_qr_code(DF_UID)) |>

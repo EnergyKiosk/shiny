@@ -19,15 +19,20 @@ ui <-
           }
           .overlay .closebtn {
             position: absolute;
-            top: 20px;
+            top: 30px;
             right: 45px;
             font-size: 60px;
+            background-color: white;
           }    
           .center {
             margin: auto;
             width: 100%;
             padding: 30px;
           }
+         .leaflet-popup-content-wrapper {
+            background: white;
+            padding: 2px;
+         }
           #mySidebarPanel {
             height: 90vh;
         }
@@ -47,12 +52,11 @@ ui <-
     ),
     div(id = "overlay_question", class = "overlay",
         slickROutput("slickr"),
-        tags$a(
-          href = "javascript:void(0)",
+        tags$a(href = "javascript:void(0)",
           class = "closebtn",
           onclick = "closeNav()",
-          "X"
-        ),
+          tags$i(class = "fa-solid fa-circle-xmark fa-xl", style = "color: red;")
+        )
     ),
     div(id = "overlay_info", class = "overlay",
       fluidRow(
@@ -119,7 +123,7 @@ ui <-
         href = "javascript:void(0)",
         class = "closebtn",
         onclick = "closeNav()",
-        "X"
+        tags$i(class = "fa-solid fa-circle-xmark fa-xl", style = "color: red;")
       ),
     ),
     titlePanel(
@@ -153,7 +157,6 @@ ui <-
                 style = "margin-top: -5px;",
                 actionButton("distance_king", label = "Where am I King?")
               )
-              
             ),
             plotlyOutput("plot_ranking", height = "25vh")
           ),
@@ -199,6 +202,7 @@ ui <-
             tags$hr(),
             tags$h4("Weather information"),
             textOutput("currentTime"),
+            tags$br(),
             tableOutput("tab_weather"),
             tags$hr(),
             fluidRow(

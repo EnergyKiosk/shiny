@@ -10,7 +10,9 @@ factpal <- colorFactor(c("#320385", "darkgreen") , solardach$Has_Solar)
 ##Basemap with Solar roof and Toolbox
 basemap <- leaflet() |>
   setView(7.966669, 47.541800, 15) |>
-  addProviderTiles(providers$CartoDB.Positron) |>
+  addProviderTiles(providers$CartoDB.Positron,
+                   options = providerTileOptions(zIndex = 200)) |>
+  addMapPane("solardach", zIndex = 310) |>
   addPolygons(data = solardach, 
               group = "solardach",
               fillOpacity = 0.5,
@@ -18,15 +20,13 @@ basemap <- leaflet() |>
               color = ~ factpal(Has_Solar),
               opacity = 1,
               weight = 1,
-              popup = ~ paste0(
+              highlightOptions = highlightOptions(color = "red", weight = 2, fillColor = 'red', bringToFront = TRUE),
+              popup = ~paste0(
                 "<b>Street: </b>", Street, " ", Number, 
                 "<br><b>ZIP: </b>", ZIP, 
                 "<br><b>Municipality: </b>", Municipality,
                 "<br><img src='", qrcode, "' alt='QR Code' width='200px' height ='200px'>"),
-              highlightOptions = highlightOptions(color = "red",
-                                                  weight = 2, 
-                                                  fillColor = 'red', 
-                                                  bringToFront = TRUE)) |>
+              options = pathOptions(pane = "solardach")) |>
   addHomeButton(st_bbox(solardach), group = "Sisslerfeld", position = "topright", add = TRUE) |>
   addHomeButton(st_bbox(solardach |> filter(ZIP == "5074")), group = "Eiken", position = "topright", add = TRUE) |>
   addHomeButton(st_bbox(solardach |> filter(ZIP == "4333")), group = "Münchwilen", position = "topright", add = TRUE) |>
