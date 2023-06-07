@@ -29,13 +29,57 @@ ui <-
             width: 100%;
             padding: 30px;
           }
-         .leaflet-popup-content-wrapper {
+          .leaflet-popup-content-wrapper {
             background: white;
             padding: 2px;
-         }
+          }
           #mySidebarPanel {
             height: 90vh;
-        }
+          }
+          #invisibleLayer1 {
+            position: absolute;
+            top: 100px;
+            left: 110px;
+            width: 100px;
+            height: 100px;
+            background-color: transparent;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 9999;
+          } 
+          #invisibleLayer2 {
+            position: absolute;
+            top: 100px;
+            left: 655px;
+            width: 100px;
+            height: 100px;
+            background-color: transparent;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 9999;
+          }
+          #invisibleLayer3 {
+            position: absolute;
+            top: 515px;
+            left: 110px;
+            width: 100px;
+            height: 100px;
+            background-color: transparent;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 9999;
+          }
+          #invisibleLayer4 {
+            position: absolute;
+            top: 515px;
+            left: 655px;
+            width: 100px;
+            height: 100px;
+            background-color: transparent;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 9999;
+          }
         ")
       ),
       tags$script(
@@ -46,6 +90,10 @@ ui <-
             
             function closeNav() {
               document.getElementById(id).style.width = '0%';
+            }
+            
+            function triggerMunicipalityEvent(attribute) {
+              Shiny.setInputValue('Municipality', {attribute : attribute});
             }
         ")
       )
@@ -147,21 +195,25 @@ ui <-
             tags$h4("Solar roof potential"),
             #plotOutput("plot_municipality", height = "15vh"),
             plotlyOutput("plot_sunburst", height = "40vh"),
+            tags$div(id = "invisibleLayer1", onclick = "triggerMunicipalityEvent('Eiken')"),
+            tags$div(id = "invisibleLayer2", onclick = "triggerMunicipalityEvent('Stein')"),
+            tags$div(id = "invisibleLayer3", onclick = "triggerMunicipalityEvent('Sisseln')"),
+            tags$div(id = "invisibleLayer4", onclick = "triggerMunicipalityEvent('Muenchwilen')"),
             tags$hr(),
             tags$h4("Neighbourhood ranking"),
             div(
               style = "display: flex; flex-direction: row; margin-bottom: 20px;",
-              radioButtons("rankingtype", NULL, c("Street", "Bounding box"), selected = "Street", inline = TRUE), 
-              tags$div(style = "margin-right: 80px;"), 
-              div(
-                style = "margin-top: -5px;",
-                actionButton("distance_king", label = "Where am I King?")
-              )
+              radioButtons("rankingtype", NULL, c("Street", "Municipality", "Visible Extent", "Where am I King?"), selected = "Street", inline = TRUE), 
             ),
             plotlyOutput("plot_ranking", height = "25vh")
           ),
           tabPanel(
             div(class="fa-solid fa-car-side fa-xl"),
+            tags$h4("Weather information"),
+            textOutput("currentTime"),
+            tags$br(),
+            tableOutput("tab_weather"),
+            tags$hr(),
             tags$h4("Vehicle information"),
             fluidRow(
               column(
@@ -189,7 +241,7 @@ ui <-
             ),
             fluidRow(
               column(
-                width = 12,
+                width = 12, align="center",
                 tableOutput("vehicle_info")            
               )
             ),
@@ -199,12 +251,8 @@ ui <-
                 uiOutput("carimage")
               )
             ),
-            tags$hr(),
-            tags$h4("Weather information"),
-            textOutput("currentTime"),
             tags$br(),
-            tableOutput("tab_weather"),
-            tags$hr(),
+            tags$br(),
             fluidRow(
               column(
                 width = 7,

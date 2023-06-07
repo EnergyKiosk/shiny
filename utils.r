@@ -56,9 +56,9 @@ basemap <- leaflet() |>
 # }
 
 extract_level <- function(label) {
-  if (grepl("_Area_Roof$", label)) {
+  if (grepl("_Roof$", label)) {
     return("4")
-  } else if (grepl("_Area$", label)) {
+  } else if (grepl("_Neighbourhood$", label)) {
     return("3")
   } else {
     return("2")
@@ -71,11 +71,11 @@ transform_data <- function(row) {
   } else if(row[[3]] == "1"){
     return(c(labels = row[[1]], values = row[[4]], parents = "Total", ids = paste0("Total - ", row[[1]])))
   } else if(row[[3]] == "2"){
-    return(c(labels = row[[2]], values = row[[4]], parents = paste0("Total - ", row[[1]]), ids = paste0("Total - ", row[[1]], " - ", row[[2]])))
+    return(c(labels = paste0(row[[2]], " - Municipality"), values = row[[4]], parents = paste0("Total - ", row[[1]]), ids = paste0("Total - ", row[[1]], " - ", row[[2]])))
   } else if(row[[3]] == "3"){
-    return(c(labels = paste0(row[[2]], " - Area"), values = row[[4]], parents = paste0("Total - ", row[[1]], " - ", row[[2]]), ids = paste0("Total - ", row[[1]], " - ", row[[2]], " - ", "Area")))
+    return(c(labels = paste0(row[[2]], " - Neighbourhood"), values = row[[4]], parents = paste0("Total - ", row[[1]], " - ", row[[2]]), ids = paste0("Total - ", row[[1]], " - ", row[[2]], " - ", "Neighbourhood")))
   } else if(row[[3]] == "4"){
-    return(c(labels = paste0(row[[2]], " - Roof"), values = row[[4]],parents = paste0("Total - ", row[[1]], " - ", row[[2]], " - ", "Area"), ids = paste0("Total - ", row[[1]], " - ", row[[2]], " - ", "Area", " - ", "Roof")))
+    return(c(labels = paste0(row[[2]], " - Roof"), values = row[[4]],parents = paste0("Total - ", row[[1]], " - ", row[[2]], " - ", "Neighbourhood"), ids = paste0("Total - ", row[[1]], " - ", row[[2]], " - ", "Neighbourhood", " - ", "Roof")))
   }
 }
 

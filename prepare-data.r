@@ -47,16 +47,18 @@ solardach <- read_sf("data-raw/solarenergie-eignung-daecher_2056.gpkg/SOLKAT_DAC
                      SELECT * FROM SOLKAT_CH_DACH) solar, (
                      SELECT ST_PolygonFromText('POLYGON((2637380 1263691, 2642887 1263691, 2642887 1267625, 2637380 1267625, 2637380 1263691))') as geom) sisslerfeld 
                      WHERE ST_intersects(solar.geom, sisslerfeld.geom)") |>
-  select(FLAECHE, STROMERTRAG, GWR_EGID, DF_UID) |>
+  select(FLAECHE, STROMERTRAG, STROMERTRAG_SOMMERHALBJAHR, STROMERTRAG_WINTERHALBJAHR, GWR_EGID, DF_UID) |> #For now we just use the Summer months
   na.omit() |>
   group_by(GWR_EGID) |>
   summarise(
     FLAECHE = round(sum(FLAECHE), 0),
     STROMERTRAG = sum(STROMERTRAG),
+    STROMERTRAG_SOMMERHALBJAHR = sum(STROMERTRAG_SOMMERHALBJAHR),
+    STROMERTRAG_WINTERHALBJAHR = sum(STROMERTRAG_WINTERHALBJAHR),
     DF_UID = first(DF_UID)) |>
   st_cast() |>
   right_join(gebaeudeadressverzeichnis, by = c("GWR_EGID" = "BDG_EGID")) |>
-  rename(Street = STN_LABEL, Number = ADR_NUMBER, Area = FLAECHE, Municipality = MUNICIPALITY, Canton = COM_CANTON, Electricity_Yield = STROMERTRAG) |>
+  rename(Street = STN_LABEL, Number = ADR_NUMBER, Area = FLAECHE, Municipality = MUNICIPALITY, Canton = COM_CANTON, Electricity_Yield = STROMERTRAG, Electricity_Yield_Summer = STROMERTRAG_SOMMERHALBJAHR, Electricity_Yield_Winter = STROMERTRAG_WINTERHALBJAHR) |>
   rowwise() |>
   mutate(qrcode = create_qr_code(DF_UID)) |>
   ungroup() |>
@@ -68,7 +70,7 @@ sisslerfeld <- sisslerfeld |>
     st_transform(4326)
 
 write_sf(solardach, "data-processed/prepared_data.gpkg", "solardach", delete_layer = TRUE)
-write_sf(solardach, "data-processed/solardach.geojson")
+#write_sf(solardach, "data-processed/solardach.geojson")
 sfarrow::st_write_parquet(solardach,"data-processed/solardach.parquet")
 write_sf(sisslerfeld, "data-processed/prepared_data.gpkg", "sisslerfeld", delete_layer = TRUE)
 
@@ -92,6 +94,7 @@ forecast_moe <- forecast_data[1:ncol(forecast_data)-1] %>% mutate(time = ymd_hm(
   select(starts_with(c("stn", "time", "DURSUN"))) |>
   filter(stn == "MOE") |>
   na.omit()
+
 forecast_final <- mutate(forecast_moe, mean_col = rowMeans(select(forecast_moe, starts_with("DURSUN")), na.rm = TRUE)) |>
   mutate(date = date(time)) |>
   group_by(date) |>
@@ -99,7 +102,8 @@ forecast_final <- mutate(forecast_moe, mean_col = rowMeans(select(forecast_moe, 
   head(3) |>
   mutate(icon = sapply(sunhours, select_weather_icon)) |>
   mutate(date = format(date, format = "%a, %d. %b %Y")) |>
-  select(date, icon)
+  select(date, sunhours, icon)
 
 write_csv(forecast_final, "data-processed/weather_data.csv", append = FALSE)
+
 

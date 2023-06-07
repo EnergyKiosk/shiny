@@ -100,19 +100,19 @@ server <- function(input, output, session) {
       na.omit() |>
       tidyr::complete(Municipality, Has_Solar, selected_area, selected_roof, fill = list(Electricity_Yield = 0)) |>
       pivot_wider(names_from = c(Has_Solar, selected_area, selected_roof), values_from = Electricity_Yield) |>
-      rename(Not_used = `FALSE_FALSE_FALSE`, 
-             Not_used_Area = `FALSE_TRUE_FALSE`, 
-             Not_used_Area_Roof = `FALSE_TRUE_TRUE`, 
-             Used = `TRUE_FALSE_FALSE`, 
-             Used_Area = `TRUE_TRUE_FALSE`,
-             Used_Area_Roof = `TRUE_TRUE_TRUE`) |>
-      select(Municipality, Not_used, Not_used_Area, Not_used_Area_Roof, Used, Used_Area, Used_Area_Roof) |> 
+      rename(Not_used_Municipality = `FALSE_FALSE_FALSE`, 
+             Not_used_Neighbourhood = `FALSE_TRUE_FALSE`, 
+             Not_used_Roof = `FALSE_TRUE_TRUE`, 
+             Used_Municipality = `TRUE_FALSE_FALSE`, 
+             Used_Neighbourhood = `TRUE_TRUE_FALSE`,
+             Used_Roof = `TRUE_TRUE_TRUE`) |>
+      select(Municipality, Not_used_Municipality, Not_used_Neighbourhood, Not_used_Roof, Used_Municipality, Used_Neighbourhood, Used_Roof) |> 
       rowwise() |>
       mutate(
-        Not_used_Area = Not_used_Area + Not_used_Area_Roof,
-        Used_Area = Used_Area + Used_Area_Roof) |>
-      mutate(Not_used = Not_used + Not_used_Area,
-             Used = Used + Used_Area) |>
+        Not_used_Neighbourhood = Not_used_Neighbourhood + Not_used_Roof,
+        Used_Neighbourhood = Used_Neighbourhood + Used_Roof) |>
+      mutate(Not_used_Municipality = Not_used_Municipality + Not_used_Neighbourhood,
+             Used_Municipality = Used_Municipality + Used_Neighbourhood) |>
       pivot_longer(
         cols = -Municipality,
         names_to = "labels",
@@ -198,36 +198,7 @@ server <- function(input, output, session) {
       config(displayModeBar = FALSE)
   })
   
-  ###################################################
-  #Where I am the champ
-  observeEvent(input$distance_king, {
-    champ_distance <- solardach |>
-      filter(Electricity_Yield >= selected_solardach()$Electricity_Yield) |>
-      mutate(distance_m = st_distance(geom, selected_solardach()) |> as.data.frame()) |>
-      arrange(distance_m) |>
-      mutate(Rank = row_number()) |> 
-      filter(Rank == 2) |>
-      st_drop_geometry()
-      
-    champ_distance_circle <- st_buffer(selected_solardach(), dist = as.integer(round(champ_distance$distance_m[[1]], 0)))
-      
-    leafletProxy("map", data = champ_distance_circle, session) |>
-      clearGroup("ranking") |>
-      clearGroup("ranking_top_3") |>
-      clearGroup("champ_distance") |>
-      clearGroup("range_calc") |>
-      addMapPane("champ_distance", zIndex = 300) |>
-      addPolygons(
-        fillOpacity = 0.5,
-        layerId = champ_distance_circle$GWR_EGID,
-        color = "orange",
-        opacity = 1,
-        weight = 1,
-        group = "champ_distance",
-        options = pathOptions(pane = "champ_distance")
-      ) 
-  })
-  
+
   ###################################################
   #Ranking Nachbarschaft
   included_ranked_solarroofs <- reactive({
@@ -236,8 +207,25 @@ server <- function(input, output, session) {
         filter(Street == selected_solardach()$Street, ZIP == selected_solardach()$ZIP) |>
         arrange(desc(Electricity_Yield)) |>
         mutate(Rank = row_number())
-    } 
-    else if(input$rankingtype == "Bounding box") {
+    } else if(input$rankingtype == "Municipality") {
+      zip <- "4332"
+      if(!is.null(input$Municipality)) {
+        if(input$Municipality == "Stein") {
+          zip <- "4332"
+        } else if (input$Municipality == "Eiken") {
+          zip <- "5074"
+        } else if (input$Municipality == "Sisseln") {
+          zip <- "4334"
+        } else if (input$Municipality == "Muenchwilen") {
+          zip <- "4333"
+        }
+      }
+      
+      ranking <- solardach |>
+        filter(ZIP == zip) |>
+        arrange(desc(Electricity_Yield)) |>
+        mutate(Rank = row_number())
+    } else if(input$rankingtype == "Visible Extent") {
       bounds <- input$map_bounds
       bbox <- c(bounds$west, bounds$south, bounds$east, bounds$north)
       coords <- matrix(c(bbox[1], bbox[2], bbox[1], bbox[4], bbox[3], bbox[4], bbox[3], bbox[2], bbox[1], bbox[2]), ncol = 2, byrow = TRUE)
@@ -249,91 +237,122 @@ server <- function(input, output, session) {
         filter(is_in_polygon) |> 
         arrange(desc(Electricity_Yield)) |>
         mutate(Rank = row_number())
+    } else if(input$rankingtype == "Where am I King?") {  #Where I am the champ
+      champ_distance <- solardach |>
+        filter(Electricity_Yield >= selected_solardach()$Electricity_Yield) |>
+        mutate(distance_m = st_distance(geom, selected_solardach()) |> as.data.frame()) |>
+        arrange(distance_m) |>
+        mutate(Rank = row_number()) |> 
+        filter(Rank == 2) |>
+        st_drop_geometry()
+      
+      ranking <- st_buffer(selected_solardach(), dist = as.integer(round(champ_distance$distance_m[[1]], 0)))
     }
     ranking
   })
 
   #Highlight all solar roofs in bbox or street
   observe({
-    leafletProxy("map", data = included_ranked_solarroofs(), session) |>
-      clearGroup("ranking") |>
-      clearGroup("ranking_top_3") |>
-      clearGroup("champ_distance") |>
-      clearGroup("range_calc") |>
-      addMapPane("ranking", zIndex = 315) |>
-      addPolygons(
-        layerId = included_ranked_solarroofs()$GWR_EGID,
-        color = "darkorange",
-        fill = FALSE,
-        weight = 7,
-        group = "ranking",
-        options = pathOptions(pane = "ranking")
-      ) 
-  })
-  
-  #Highlight the top 3 with gold, silver, bronze
-  observe({
-    ranking_top_3 <- included_ranked_solarroofs() |> head(3)
-    leafletProxy("map", data =ranking_top_3, session) |>
-      clearGroup("ranking_top_3") |>
-      clearGroup("champ_distance") |>
-      clearGroup("range_calc") |>
-      addMapPane("ranking_top_3", zIndex = 316) |>
-      addPolygons(
-        fillOpacity = 1,
-        layerId = ranking_top_3$GWR_EGID,
-        color = unname(colorsSchema[names(colorsSchema) %in% ranking_top_3$Rank]),
-        opacity = 1,
-        weight = 1,
-        group = "ranking_top_3",
-        options = pathOptions(pane = "ranking_top_3")
-      )
-    
-    #Add icon for top 3
-    ranking_top_3_points <- ranking_top_3 |> st_centroid()
-    leafletProxy("map", data = ranking_top_3_points, session) |>
-      addMapPane("ranking_top_3", zIndex = 316) |>
-      addAwesomeMarkers(
-        icon = icons[ranking_top_3_points$Rank],
-        group = "ranking_top_3",
-        options = pathOptions(pane = "ranking_top_3")
-      )
+    if(input$rankingtype != "Where am I King?") {
+      leafletProxy("map", data = included_ranked_solarroofs(), session) |>
+        clearGroup("ranking") |>
+        clearGroup("ranking_top_3") |>
+        clearGroup("champ_distance") |>
+        clearGroup("range_calc") |>
+        addMapPane("ranking", zIndex = 315) |>
+        addPolygons(
+          layerId = included_ranked_solarroofs()$GWR_EGID,
+          color = "darkorange",
+          fill = FALSE,
+          weight = 7,
+          group = "ranking",
+          options = pathOptions(pane = "ranking")
+        )
+      
+      #Highlight the top 3 with gold, silver, bronze
+      ranking_top_3 <- included_ranked_solarroofs() |> head(3)
+      
+      leafletProxy("map", data =ranking_top_3, session) |>
+        addMapPane("ranking_top_3", zIndex = 316) |>
+        addPolygons(
+          fillOpacity = 1,
+          layerId = ranking_top_3$GWR_EGID,
+          color = unname(colorsSchema[names(colorsSchema) %in% ranking_top_3$Rank]),
+          opacity = 1,
+          weight = 1,
+          group = "ranking_top_3",
+          options = pathOptions(pane = "ranking_top_3")
+        )
+      
+      #Add icon for top 3
+      ranking_top_3_points <- ranking_top_3 |> st_centroid()
+      leafletProxy("map", data = ranking_top_3_points, session) |>
+        addMapPane("ranking_top_3", zIndex = 316) |>
+        addAwesomeMarkers(
+          icon = icons[ranking_top_3_points$Rank],
+          group = "ranking_top_3",
+          options = pathOptions(pane = "ranking_top_3")
+        )
+      } else {
+        leafletProxy("map", data = included_ranked_solarroofs(), session) |>
+          clearGroup("ranking") |>
+          clearGroup("ranking_top_3") |>
+          clearGroup("champ_distance") |>
+          clearGroup("range_calc") |>
+          addMapPane("champ_distance", zIndex = 300) |>
+          addPolygons(
+            fillOpacity = 0.5,
+            layerId = included_ranked_solarroofs()$GWR_EGID,
+            color = "orange",
+            opacity = 1,
+            weight = 1,
+            group = "champ_distance",
+            options = pathOptions(pane = "champ_distance")
+          ) 
+      }
   })
   
   #Show plot of ranking
   output$plot_ranking <- renderPlotly({
-    ranking_top_3 <- included_ranked_solarroofs() |> head(3)
-    
-    #Check if the selected roof is already part of the top 3 otherwise add it as well for the plot
-    ranking_top_3 <- ranking_top_3 |> mutate(Rank_label = as.character(Rank))
-    if(!any(ranking_top_3$GWR_EGID == selected_solardach()$GWR_EGID)) {
-      you_ranking <- included_ranked_solarroofs() |> filter(GWR_EGID == selected_solardach()$GWR_EGID)
-      you_ranking$Rank_label <- "You"
-      ranking_top_3 <- ranking_top_3 |> rbind(you_ranking)
+    if(input$rankingtype == "Where am I King?") {
+      plotly_empty() |>
+        config(displayModeBar = FALSE) |>
+        layout(plot_bgcolor = "#f5f5f5",
+               paper_bgcolor = "#f5f5f5")
     } else {
-      ranking_top_3 <- ranking_top_3 |> 
-        mutate(Rank_label = replace(Rank_label, GWR_EGID == selected_solardach()$GWR_EGID, "You"))
+      ranking_top_3 <- included_ranked_solarroofs() |> head(3)
+      
+      #Check if the selected roof is already part of the top 3 otherwise add it as well for the plot
+      ranking_top_3 <- ranking_top_3 |> mutate(Rank_label = as.character(Rank))
+      if(!any(ranking_top_3$GWR_EGID == selected_solardach()$GWR_EGID)) {
+        you_ranking <- included_ranked_solarroofs() |> filter(GWR_EGID == selected_solardach()$GWR_EGID)
+        you_ranking$Rank_label <- "You"
+        ranking_top_3 <- ranking_top_3 |> rbind(you_ranking)
+      } else {
+        ranking_top_3 <- ranking_top_3 |> 
+          mutate(Rank_label = replace(Rank_label, GWR_EGID == selected_solardach()$GWR_EGID, "You"))
+      }
+      
+      ranking_top_3 |>
+        st_drop_geometry() |>
+        mutate(Adress = paste(Street, Number)) |>
+        plot_ly(
+          x = ~ reorder(Adress, Rank),
+          y = ~ Electricity_Yield,
+          text = ~ ifelse(Rank_label == as.character(Rank), Rank_label, paste(as.character(Rank), "-" , Rank_label)), 
+          textposition = 'auto',
+          type = "bar",
+          marker = list(color = ~ color_scale(Rank_label),
+                        line = list(color = 'black', width = 1.5))
+        ) |>
+        config(displayModeBar = FALSE) |>
+        layout(hovermode = TRUE,
+               showlegend = FALSE,
+               xaxis = list(title = "Address"),
+               yaxis = list(title = "Possible electricity yield (kWh)"),
+               plot_bgcolor = "#f5f5f5",
+               paper_bgcolor = "#f5f5f5")
     }
-    
-    ranking_top_3 |>
-      st_drop_geometry() |>
-      mutate(Adress = paste(Street, Number)) |>
-      plot_ly(
-        x = ~ reorder(Adress, Rank),
-        y = ~ Electricity_Yield,
-        text = ~ ifelse(Rank_label == as.character(Rank), Rank_label, paste(as.character(Rank), "-" , Rank_label)), 
-        textposition = 'auto',
-        type = "bar",
-        marker = list(color = ~ color_scale(Rank_label),
-                      line = list(color = 'black', width = 1.5))
-      ) |>
-      config(displayModeBar = FALSE) |>
-      layout(hovermode = TRUE,
-             showlegend = FALSE,
-             xaxis = list(title = "Address"),
-             yaxis = list(title = "Possible electricity yield"),
-             plot_bgcolor = "#f5f5f5",
-             paper_bgcolor = "#f5f5f5")
   })
 
   ######################################################################################################################
@@ -375,6 +394,8 @@ server <- function(input, output, session) {
   
   ##Weather information
   output$tab_weather <- function() {
+    weather_data <-weather_data |>
+      select(date, icon)
     colnames(weather_data) <- NULL
     table <- weather_data |> 
       t() |> 
@@ -394,7 +415,9 @@ server <- function(input, output, session) {
     
     selected_charging_hours <- as.numeric(hm(input$charginghours), "hours")
     max_charging_speed_car_per_hour <- selected_car()$battery_capacity_kwh / selected_car()$battery_charge_time
-    max_charging_speed_roof_per_hour <- selected_solardach$Electricity_Yield / 365 / 24
+    max_charging_speed_roof_per_hour <- (selected_solardach$Electricity_Yield_Summer / 183 / 24) * (mean(weather_data$sunhours) / (663 / 92)) # 183 -> days from 1. April to 30. Sept
+                                                                                                                                              # 663 -> normed 1991-2020 sun hours in Basel in Summer (June, July, August)
+                                                                                                                                              #  92 -> days from 1. June to 31. Aug
     actual_charging_speed_per_hour <- ifelse(max_charging_speed_roof_per_hour >= max_charging_speed_car_per_hour, max_charging_speed_car_per_hour, max_charging_speed_roof_per_hour)
 
     range_per_day_km <- ceiling(selected_car()$max_range_km * ((actual_charging_speed_per_hour * selected_charging_hours) / (max_charging_speed_car_per_hour * selected_car()$battery_charge_time)))
