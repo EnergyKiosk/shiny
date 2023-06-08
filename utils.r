@@ -1,9 +1,9 @@
 source("libraries.r")
 
 #Load data
-cars <- read_delim("data-processed/electric_cars.csv", delim = ";")
+cars <- read_delim("data-processed/electric_cars.csv", delim = ";", show_col_types = FALSE)
 solardach <- read_sf("data-processed/prepared_data.gpkg", "solardach")
-weather_data <- read_delim("data-processed/weather_data.csv", delim = ",")
+weather_data <- read_delim("data-processed/weather_data.csv", delim = ",", show_col_types = FALSE)
 
 factpal <- colorFactor(c("#320385", "darkgreen") , solardach$Has_Solar) 
 

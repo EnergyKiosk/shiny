@@ -5,7 +5,7 @@ server <- function(input, output, session) {
   
   #Prepare and show manual
   output$slickr <- renderSlickR({
-    imgs <- sort(list.files("www/manual/2560x1440/", pattern=".PNG", full.names = TRUE), decreasing = TRUE)
+    imgs <- sort(list.files("www/manual/1920x1080/", pattern=".PNG", full.names = TRUE), decreasing = TRUE)
     slickR(imgs)
   })
   observeEvent(input$manualbutton, {
@@ -95,8 +95,7 @@ server <- function(input, output, session) {
       mutate(selected_roof = ifelse(GWR_EGID == selected_solardach()$GWR_EGID, TRUE, FALSE)) |>
       st_drop_geometry() |>
       group_by(Municipality, Has_Solar, selected_area, selected_roof) |>
-      summarize(Electricity_Yield = sum(Electricity_Yield, na.rm = TRUE)) |>
-      ungroup() |>
+      summarise(Electricity_Yield = sum(Electricity_Yield, na.rm = TRUE), .groups = 'drop') |>
       na.omit() |>
       tidyr::complete(Municipality, Has_Solar, selected_area, selected_roof, fill = list(Electricity_Yield = 0)) |>
       pivot_wider(names_from = c(Has_Solar, selected_area, selected_roof), values_from = Electricity_Yield) |>
@@ -130,7 +129,8 @@ server <- function(input, output, session) {
       rbind(df |>
             filter(level == "2") |>
             group_by(Municipality) |>
-            summarize(values = sum(values)) |>
+            summarise(values = sum(values)) |>
+            ungroup() |>
             mutate(labels = "Total",
                    level = "1") |>
             select(Municipality, labels, level, values)
@@ -139,7 +139,8 @@ server <- function(input, output, session) {
       rbind(df |>
               filter(labels == "Total") |>
               group_by(labels) |>
-              summarize(values = sum(values)) |>
+              summarise(values = sum(values)) |>
+              ungroup() |>
               mutate(labels = "Total",
                      level = "0",
                      Municipality = "Total") |>

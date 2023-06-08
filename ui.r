@@ -39,44 +39,44 @@ ui <-
           #invisibleLayer1 {
             position: absolute;
             top: 100px;
-            left: 110px;
+            left: 80px;
             width: 100px;
             height: 100px;
-            background-color: transparent;
-            opacity: 0;
+            background-color: tansparent;
+            opacity: 0.8;
             cursor: pointer;
             z-index: 9999;
           } 
           #invisibleLayer2 {
             position: absolute;
             top: 100px;
-            left: 655px;
+            left: 475px;
             width: 100px;
             height: 100px;
-            background-color: transparent;
-            opacity: 0;
+            background-color: tansparent;
+            opacity: 0.8;
             cursor: pointer;
             z-index: 9999;
           }
           #invisibleLayer3 {
             position: absolute;
-            top: 515px;
-            left: 110px;
+            top: 435px;
+            left: 80px;
             width: 100px;
             height: 100px;
-            background-color: transparent;
-            opacity: 0;
+            background-color: tansparent;
+            opacity: 0.8;
             cursor: pointer;
             z-index: 9999;
           }
           #invisibleLayer4 {
             position: absolute;
-            top: 515px;
-            left: 655px;
+            top: 435px;
+            left: 475px;
             width: 100px;
             height: 100px;
-            background-color: transparent;
-            opacity: 0;
+            background-color: tansparent;
+            opacity: 0.8;
             cursor: pointer;
             z-index: 9999;
           }
@@ -112,28 +112,29 @@ ui <-
           width = 6,
           div(class = "center",
             style = "height: 45vh; background-color: white; border: 2px solid black; border-radius: 5px;",
-            h1("Sisslerfeld", img(src = "info/sisslerfeld.jpg", height = "100px")),
-            a(href = "https://www.sisslerfeld.ch/", "Website Sisslerfeld", style = "font-size:24px;"),
+            h1("Sisslerfeld", a(href = "https://www.sisslerfeld.ch/", img(src = "info/sisslerfeld.jpg", height = "100px"), target = "blank"), style = "font-size:24px;"),
             hr(),
             p("The largest employment zone in the canton of Aargau is located in the Sisslerfeld. Good jobs 
               are to be created here. At the same time, the beautiful landscape should be strengthened and traffic growth limited. 
               For this to succeed, framework conditions and coordination are needed. The municipalities of Eiken, Münchwilen, 
               Sisseln and Stein, the Fricktal Regio Regional Planning Association and the Canton of Aargau are therefore working 
               together to make the Sisslerfeld a success story for everyone. The town of Bad Säckingen and the German regional 
-              association are also involved.", style = "font-size:24px;")
+              association are also involved.", style = "font-size:20px;")
           )
         ), 
         column(
           width = 6,
           div(class = "center",
               style = "height: 45vh; background-color: white; border: 2px solid black; border-radius: 5px;",
-              h1("Energy Living Lab", img(src = "info/energylivinglab.png", height = "100px")),
-              a(href = "https://energylivinglab.com/de/", "Website Energy Living Lab", style = "font-size:24px;"),
+              div(
+                a(href = "https://energylivinglab.com/de/", img(src = "info/energylivinglab.png", height = "100px"), target = "blank"),
+                a(href = "https://www.innosuisse.ch/inno/en/home/project-set-up-assistance-and-networking/innovation-booster.html", img(src = "info/logo-Innovation-Booster.png", height = "100px"), target = "blank")
+              ),
               hr(),
               p("The Energy Living Lab Association (ELLA) was founded in 2020 as a spin-off to replicate, disseminate and communicate 
                 Living Lab approaches in the energy sector. It supports an ecosystem of actors in using the methods and tools and invites 
                 people and institutions from the public, private, governmental and academic sectors as well as civil society to co-create 
-                solutions for the decarbonisation of energy supply.", style = "font-size:24px;")
+                solutions for the decarbonisation of energy supply.", style = "font-size:20px;")
           )
         )
       ),
@@ -142,28 +143,26 @@ ui <-
           width = 6,
           div(class = "center",
               style = "height: 45vh; background-color: white; border: 2px solid black; border-radius: 5px;",
-              h1("NCCR 'Dependable, ubiquitous automation'", img(src = "info/nccr_automation.png", height = "100px")),
-              a(href = "https://nccr-automation.ch", "Website NCCR-Automation", style = "font-size:24px;"), 
+              a(href = "https://nccr-automation.ch", img(src = "info/nccr_automation.png", height = "100px"), target = "blank"), 
               hr(),
               p("NCCRs are interdisciplinary research networks funded by the Swiss National Science Foundation (SNSF). 
               They support research in areas that are of strategic importance for the future of Swiss science, economy and society. 
               The National Centre of Competence in Research «Dependable, ubiquitous automation», NCCR Automation for short, 
                 investigates new approaches to the control of complex automated systems and implements them in concrete applications in practice.
                 Through networked research, the development of new technologies and education, the NCCR aims to strengthen Switzerland's leading role 
-                in automation and control technology.", style = "font-size:24px;")
+                in automation and control technology.", style = "font-size:20px;")
           )
         ),
         column(
           width = 6,
           div(class = "center",
               style = "height: 45vh; background-color: white; border: 2px solid black; border-radius: 5px;",
-              h1("ZHAW Geoinformatics Research Group", img(src = "info/zhaw_lsfm_iunr_4f.png", height = "100px")),
-              a(href = "https://www.zhaw.ch/de/lsfm/institute-zentren/iunr/geooekologie/geoinformatik/", "Website Geoinformatics Research Group", style = "font-size:24px;"),
+              a(href = "https://www.zhaw.ch/de/lsfm/institute-zentren/iunr/geooekologie/geoinformatik/", img(src = "info/zhaw_lsfm_iunr_4f.png", height = "80px"), target = "blank"),
               hr(),
               p("The Geoinformatics Research Group focuses on the development, application and validation of innovative methods 
                 for processing and analysing spatiotemporal data on topics relating to the environment and natural resources. 
                 As a centre of excellence for industry-focused approaches to data, software and infrastructure, the Group provides 
-                solutions-based and customer-focused advice on the planning and implementation of geoinformatics projects.", style = "font-size:24px;")
+                solutions-based and customer-focused advice on the planning and implementation of geoinformatics projects.", style = "font-size:20px;")
           )
         )
       ),
