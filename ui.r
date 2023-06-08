@@ -29,53 +29,49 @@ ui <-
             width: 100%;
             padding: 30px;
           }
-          .leaflet-popup-content-wrapper {
-            background: white;
-            padding: 2px;
-          }
           #mySidebarPanel {
             height: 90vh;
           }
           #invisibleLayer1 {
             position: absolute;
-            top: 100px;
-            left: 80px;
+            top: 100px; <!-- need to be changed depending on the screen size, change background color to see the div -->
+            left: 80px; <!-- need to be changed depending on the screen size, change background color to see the div -->
             width: 100px;
             height: 100px;
-            background-color: tansparent;
+            background-color: tansparent; <!-- yellow; -->
             opacity: 0.8;
             cursor: pointer;
             z-index: 9999;
           } 
           #invisibleLayer2 {
             position: absolute;
-            top: 100px;
-            left: 475px;
+            top: 100px; <!-- need to be changed depending on the screen size, change background color to see the div -->
+            left: 475px; <!-- need to be changed depending on the screen size, change background color to see the div -->
             width: 100px;
             height: 100px;
-            background-color: tansparent;
+            background-color:  tansparent; <!-- red; -->
             opacity: 0.8;
             cursor: pointer;
             z-index: 9999;
           }
           #invisibleLayer3 {
             position: absolute;
-            top: 435px;
-            left: 80px;
+            top: 435px; <!-- need to be changed depending on the screen size, change background color to see the div -->
+            left: 80px; <!-- need to be changed depending on the screen size, change background color to see the div -->
             width: 100px;
             height: 100px;
-            background-color: tansparent;
+            background-color:  tansparent; <!-- green; -->
             opacity: 0.8;
             cursor: pointer;
             z-index: 9999;
           }
           #invisibleLayer4 {
             position: absolute;
-            top: 435px;
-            left: 475px;
+            top: 435px; <!-- need to be changed depending on the screen size, change background color to see the div -->
+            left: 475px; <!-- need to be changed depending on the screen size, change background color to see the div -->
             width: 100px;
             height: 100px;
-            background-color: tansparent;
+            background-color: tansparent;  <!-- blue; -->
             opacity: 0.8;
             cursor: pointer;
             z-index: 9999;
