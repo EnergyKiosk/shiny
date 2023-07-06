@@ -260,6 +260,7 @@ server <- function(input, output, session) {
         clearGroup("ranking_top_3") |>
         clearGroup("champ_distance") |>
         clearGroup("range_calc") |>
+        clearControls() |>
         addMapPane("ranking", zIndex = 315) |>
         addPolygons(
           layerId = included_ranked_solarroofs()$GWR_EGID,
@@ -300,6 +301,7 @@ server <- function(input, output, session) {
           clearGroup("ranking_top_3") |>
           clearGroup("champ_distance") |>
           clearGroup("range_calc") |>
+          clearControls() |>
           addMapPane("champ_distance", zIndex = 300) |>
           addPolygons(
             fillOpacity = 0.5,
