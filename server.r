@@ -31,7 +31,7 @@ server <- function(input, output, session) {
       filter(solardach$GWR_EGID == idx) 
   })
   
-  # Hightlight selected roof
+  # Highlight selected roof
   observe({
       leafletProxy("map", data = selected_solardach(), session) |>
         clearGroup("selected_solardach") |>
@@ -46,10 +46,10 @@ server <- function(input, output, session) {
           options = pathOptions(pane = "selected_solardach")
         )
     
-    selected_solardach <- selected_solardach() |>
+    selected_solardach_point <- selected_solardach() |>
       st_centroid() #Get point of selected location
     
-    leafletProxy("map", data = selected_solardach, session) |>
+    leafletProxy("map", data = selected_solardach_point, session) |>
       addMapPane("selected_solardach_icon", zIndex = 320) |>
       addAwesomeMarkers(
         icon = makeAwesomeIcon(
